@@ -236,12 +236,10 @@
 			};
 		},
 		methods: {
-			addPipelineElement({ id, /*name,*/ ...others }) {
-				return {
-					id: this.idGlobal++,
-					// name: name + " " + this.idGlobal,
-					...others,
-				};
+			addPipelineElement(elem) {
+				let temp = JSON.parse(JSON.stringify(elem));
+				temp.id = this.idGlobal++;
+				return temp;
 			},
 		},
 		watch: {
