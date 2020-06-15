@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="stage-wrapper">
 		<draggable
 			:list="children"
 			@start="drag = true"
@@ -16,6 +16,7 @@
 				}"
 				v-for="element in children"
 				:key="element.id"
+				:ref="'element-' + element.id"
 			>
 				<div
 					class="pipeline-stage-title"
@@ -23,15 +24,24 @@
 						'make-title-bold':
 							element.children && element.children.length,
 					}"
+					@click="toggleChildren(element.id)"
 				>
 					{{ element.name }}
+					<button
+						@click.stop="removeElement(element.id)"
+						class="remove-btn"
+					>
+						X
+					</button>
 				</div>
-				<pipeline-stage
-					v-if="element.canBeNested"
-					:children="element.children"
-					:parentObject="element"
-					:key="element.id"
-				></pipeline-stage>
+				<div class="children-wrapper">
+					<pipeline-stage
+						v-if="element.canBeNested"
+						:children="element.children"
+						:parentObject="element"
+						:key="element.id"
+					></pipeline-stage>
+				</div>
 			</div>
 		</draggable>
 	</div>
@@ -39,15 +49,18 @@
 
 <script>
 	import draggable from "vuedraggable";
+	import { mapMutations } from "vuex";
 	export default {
 		name: "pipeline-stage",
 		components: {
 			draggable,
 		},
+		mounted() {},
 		data() {
 			return {};
 		},
 		methods: {
+			...mapMutations(["removeElementFromList"]),
 			getGroupObject() {
 				if (this.parentObject.canBeNested) {
 					return {
@@ -56,6 +69,17 @@
 				} else {
 					return { name: "PipelineStages" };
 				}
+			},
+			toggleChildren(id) {
+				let parent = this.$refs["element-" + id][0];
+				if (parent.classList.contains("hide-children")) {
+					parent.classList.remove("hide-children");
+				} else {
+					parent.classList.add("hide-children");
+				}
+			},
+			removeElement(id) {
+				this.removeElementFromList(id);
 			},
 		},
 		props: {
@@ -66,6 +90,11 @@
 			parentObject: {
 				required: true,
 				type: Object,
+			},
+			level: {
+				required: false,
+				type: Number,
+				default: 1,
 			},
 		},
 	};
@@ -85,11 +114,11 @@
 		background-color: gray;
 		position: absolute;
 		left: 0px;
-		top: 50%;
+		top: 20px;
 	}
 
 	.have-children::before {
-		height: 100%;
+		height: calc(100% - 23px);
 		width: 1px;
 		content: " ";
 		background-color: gray;
@@ -97,15 +126,10 @@
 		left: 20px;
 	}
 
-	/* .has-children::after {
-		height: 2px;
-		width: 20px;
-		content: " ";
-		background-color: black;
-		position: absolute;
-		left: 20px;
-		top: 50%;
-	} */
+	.level-1::after,
+	.level-1::before {
+		background-color: red;
+	}
 
 	.ghost {
 		background-color: salmon;
@@ -115,7 +139,18 @@
 		background-color: white;
 		padding: 10px;
 		border: 1px solid black;
+		color: var(--color);
 		/* border-radius: 4px; */
+		position: relative;
+		display: flex;
+		justify-content: space-between;
+		text-align: left;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.hide-children .children-wrapper {
+		display: none;
 	}
 
 	.make-title-bold {

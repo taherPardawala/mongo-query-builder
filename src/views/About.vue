@@ -96,6 +96,21 @@
 			draggable,
 			pipelineStages,
 		},
+		mounted() {
+			this.$store.subscribe((mutation, state) => {
+				if (mutation.type == "removeElementFromList") {
+					let pipeline = JSON.parse(
+						JSON.stringify(this.queryPipeline)
+					);
+					pipeline = this.removeFromTree(
+						{ children: pipeline },
+						mutation.payload
+					);
+					console.log(JSON.stringify(pipeline, null, 2));
+					this.queryPipeline = pipeline.children;
+				}
+			});
+		},
 		data() {
 			return {
 				queryPipeline: [],
@@ -110,51 +125,61 @@
 						id: 14,
 						name: "Add Fields",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 16,
 						name: "count",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 17,
 						name: "group",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 18,
 						name: "limit",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 21,
 						name: "merge",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 22,
 						name: "out",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 23,
 						name: "project",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 24,
 						name: "replaceRoot",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 25,
 						name: "skip",
 						canBeNested: false,
+						children: [],
 					},
 					{
 						id: 26,
 						name: "sortByCount",
 						canBeNested: false,
+						children: [],
 					},
 				],
 				matchOperators: [
@@ -210,13 +235,13 @@
 					{
 						id: 10,
 						name: "IN",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 					},
 					{
 						id: 11,
 						name: "NIN",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 					},
 					{
@@ -240,6 +265,16 @@
 				let temp = JSON.parse(JSON.stringify(elem));
 				temp.id = this.idGlobal++;
 				return temp;
+			},
+			removeFromTree(parent, childIDToRemove) {
+				parent.children = parent.children
+					.filter((child) => {
+						return child.id !== childIDToRemove;
+					})
+					.map((child) => {
+						return this.removeFromTree(child, childIDToRemove);
+					});
+				return parent;
 			},
 		},
 		watch: {
@@ -290,7 +325,7 @@
 	}
 
 	.pipeline .title::after {
-		height: calc(100%);
+		height: calc(100% - 23px);
 		width: 1px;
 		content: " ";
 		background-color: gray;
