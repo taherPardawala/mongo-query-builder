@@ -28,12 +28,20 @@
 					@click="toggleChildren(element.id)"
 				>
 					{{ element.name }}
-					<button
-						@click.stop="removeElement(element.id)"
-						class="remove-btn"
-					>
-						X
-					</button>
+					<div>
+						<button
+							@click.stop="openFieldsModal(element)"
+							class="edit-btn"
+						>
+							Edit
+						</button>
+						<button
+							@click.stop="removeElement(element.id)"
+							class="remove-btn"
+						>
+							X
+						</button>
+					</div>
 				</div>
 				<div class="children-wrapper">
 					<pipeline-stage
@@ -45,6 +53,24 @@
 				</div>
 			</div>
 		</draggable>
+		<modal :clickToClose="false" name="hello-world">
+			<div class="modal-wrapper">
+				<div class="modal-title">
+					Add Fields
+				</div>
+				<div class="modal-content">
+					The form and stuff goes here
+				</div>
+				<div class="modal-actions">
+					<button
+						@click.stop="closeFieldsModal"
+						class="close-modal-btn"
+					>
+						close
+					</button>
+				</div>
+			</div>
+		</modal>
 	</div>
 </template>
 
@@ -81,6 +107,12 @@
 			},
 			removeElement(id) {
 				this.removeElementFromList(id);
+			},
+			openFieldsModal({ id }) {
+				this.$modal.show("hello-world");
+			},
+			closeFieldsModal() {
+				this.$modal.hide("hello-world");
 			},
 		},
 		props: {
@@ -157,5 +189,48 @@
 	.make-title-bold {
 		font-weight: 600;
 		color: green;
+	}
+
+	.modal-wrapper {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
+	.modal-wrapper .modal-title {
+		padding: 10px;
+		font-weight: 600;
+		font-size: 18px;
+	}
+
+	.modal-wrapper .modal-content {
+		padding: 10px;
+	}
+
+	.modal-wrapper .modal-actions {
+		padding: 10px;
+	}
+
+	.modal-wrapper .modal-actions button {
+		padding: 10px 20px;
+	}
+
+	.remove-btn {
+		color: red;
+	}
+	button {
+		background-color: transparent;
+		color: #fb8c00;
+		border: none;
+		border-radius: 4px;
+		font-size: 16px;
+	}
+	button:hover {
+		background-color: #fef1e1;
+	}
+
+	button:focus {
+		outline: none;
 	}
 </style>

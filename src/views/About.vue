@@ -294,7 +294,7 @@
 					},
 				],
 				idGlobal: 1,
-				output: "",
+				output: [],
 			};
 		},
 		methods: {
