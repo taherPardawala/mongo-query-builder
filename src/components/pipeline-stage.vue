@@ -7,6 +7,7 @@
 			:group="getGroupObject()"
 			ghost-class="ghost"
 			:animation="150"
+			:swapThreshold="0.65"
 		>
 			<div
 				class="operator-item"

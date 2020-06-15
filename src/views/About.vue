@@ -65,24 +65,16 @@
 		</div>
 		<div class="pipeline">
 			<div class="title">Pipeline</div>
-			<pipelineStages
-				:parentObject="{}"
-				:children="queryPipeline"
-			></pipelineStages>
-			<!-- <draggable
-				v-model="queryPipeline"
-				@start="drag = true"
-				@end="drag = false"
-				:group="{ name: 'Operators' }"
-			>
-				<div
-					class="operator-item"
-					v-for="element in queryPipeline"
-					:key="element.id"
-				>
-					{{ element.name }}
-				</div>
-			</draggable> -->
+			<div class="pipeline-container">
+				<pipelineStages
+					:parentObject="{}"
+					:children="queryPipeline"
+				></pipelineStages>
+			</div>
+		</div>
+		<div class="visualiser">
+			<div class="title">Query Visualiser</div>
+			<pre class="query-pipeline">{{ valueString }}</pre>
 		</div>
 	</div>
 </template>
@@ -106,7 +98,6 @@
 						{ children: pipeline },
 						mutation.payload
 					);
-					console.log(JSON.stringify(pipeline, null, 2));
 					this.queryPipeline = pipeline.children;
 				}
 			});
@@ -120,144 +111,190 @@
 						name: "Match",
 						canBeNested: true,
 						children: [],
+						keyword: "$match",
+						type: "Object",
 					},
 					{
 						id: 14,
 						name: "Add Fields",
 						canBeNested: false,
 						children: [],
+						keyword: "$addFields",
+						type: "Object",
 					},
 					{
 						id: 16,
-						name: "count",
+						name: "Count",
 						canBeNested: false,
 						children: [],
+						keyword: "$count",
+						type: "Object",
 					},
 					{
 						id: 17,
-						name: "group",
+						name: "Group",
 						canBeNested: false,
 						children: [],
+						keyword: "$group",
+						type: "Object",
 					},
 					{
 						id: 18,
-						name: "limit",
+						name: "Limit",
 						canBeNested: false,
 						children: [],
+						keyword: "$limit",
+						type: "Object",
 					},
 					{
 						id: 21,
-						name: "merge",
+						name: "Merge",
 						canBeNested: false,
 						children: [],
+						keyword: "$merge",
+						type: "Object",
 					},
 					{
 						id: 22,
-						name: "out",
+						name: "Out",
 						canBeNested: false,
 						children: [],
+						keyword: "$out",
+						type: "Object",
 					},
 					{
 						id: 23,
-						name: "project",
+						name: "Project",
 						canBeNested: false,
 						children: [],
+						keyword: "$project",
+						type: "Object",
 					},
 					{
 						id: 24,
-						name: "replaceRoot",
+						name: "Replace Root",
 						canBeNested: false,
 						children: [],
+						keyword: "$replaceRoot",
+						type: "Object",
 					},
 					{
 						id: 25,
-						name: "skip",
+						name: "Skip",
 						canBeNested: false,
 						children: [],
+						keyword: "$skip",
+						type: "Object",
 					},
 					{
 						id: 26,
-						name: "sortByCount",
+						name: "Sort By Count",
 						canBeNested: false,
 						children: [],
+						keyword: "$sortByCount",
+						type: "Object",
 					},
 				],
 				matchOperators: [
-					// All these operators below only work in Match and lookup pipelines
 					{
 						id: 1,
 						name: "And",
 						canBeNested: true,
 						children: [],
+						keyword: "$and",
+						type: "Array",
 					},
 					{
 						id: 2,
 						name: "Or",
 						canBeNested: true,
 						children: [],
+						keyword: "$or",
+						type: "Array",
 					},
 					{
 						id: 4,
 						name: "EQ",
 						canBeNested: true,
 						children: [],
+						keyword: "$eq",
+						type: "Object",
 					},
 					{
 						id: 5,
 						name: "NEQ",
 						canBeNested: true,
 						children: [],
+						keyword: "$neq",
+						type: "Object",
 					},
 					{
 						id: 6,
 						name: "GT",
 						canBeNested: true,
 						children: [],
+						keyword: "$gt",
+						type: "Object",
 					},
 					{
 						id: 7,
 						name: "GTE",
 						canBeNested: true,
 						children: [],
+						keyword: "$gte",
+						type: "Object",
 					},
 					{
 						id: 8,
 						name: "LT",
 						canBeNested: true,
 						children: [],
+						keyword: "$lt",
+						type: "Object",
 					},
 					{
 						id: 9,
 						name: "LTE",
 						canBeNested: true,
 						children: [],
+						keyword: "$lte",
+						type: "Object",
 					},
 					{
 						id: 10,
 						name: "IN",
 						canBeNested: false,
 						children: [],
+						keyword: "$in",
+						type: "Object",
 					},
 					{
 						id: 11,
 						name: "NIN",
 						canBeNested: false,
 						children: [],
+						keyword: "$nin",
+						type: "Object",
 					},
 					{
 						id: 12,
 						name: "NOT",
 						canBeNested: true,
 						children: [],
+						keyword: "$not",
+						type: "Object",
 					},
 					{
 						id: 13,
 						name: "REGEX",
 						canBeNested: true,
 						children: [],
+						keyword: "$regex",
+						type: "Object",
 					},
 				],
 				idGlobal: 1,
+				output: "",
 			};
 		},
 		methods: {
@@ -276,12 +313,47 @@
 					});
 				return parent;
 			},
+			createQuery(query) {
+				let pipeline = [];
+				for (let elem of query) {
+					// if (elem.children.length) {
+					// 	this.createQuery(elem.children);
+					// }
+					switch (elem.type) {
+						case "Object": {
+							pipeline.push({
+								[elem.keyword]: elem.children.length
+									? { ...this.createQuery(elem.children) }
+									: {},
+							});
+							break;
+						}
+						case "Array": {
+							pipeline.push({
+								[elem.keyword]: elem.children.length
+									? this.createQuery(elem.children)
+									: [],
+							});
+							break;
+						}
+					}
+				}
+				return pipeline;
+			},
+		},
+		computed: {
+			valueString() {
+				return JSON.stringify(this.output, null, 2);
+			},
 		},
 		watch: {
 			queryPipeline: {
 				deep: true,
 				handler: function(nv, cv) {
-					console.log(JSON.stringify(nv, null, 2));
+					// console.log(JSON.stringify(nv, null, 2));
+					let query = this.createQuery(nv);
+					// console.log(JSON.stringify(query, null, 2));
+					this.output = query;
 				},
 			},
 		},
@@ -292,7 +364,7 @@
 	.about {
 		display: flex;
 		flex-direction: row;
-		justify-content: space-around;
+		justify-content: flex-start;
 	}
 
 	.operator-wrapper {
@@ -302,14 +374,20 @@
 
 	.operator-list {
 		background-color: lightblue;
-		width: 300px;
+		width: 200px;
 		position: relative;
 	}
 
 	.pipeline {
-		/* background-color: lightgreen; */
 		height: 100%;
-		width: 50%;
+		width: 33%;
+		margin-left: 20px;
+		position: relative;
+	}
+
+	.visualiser {
+		height: 100%;
+		width: 33%;
 		margin-left: 20px;
 		position: relative;
 	}
@@ -369,5 +447,8 @@
 
 	.ghost {
 		background-color: salmon;
+	}
+	pre {
+		text-align: start;
 	}
 </style>
