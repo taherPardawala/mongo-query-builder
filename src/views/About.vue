@@ -215,7 +215,7 @@
 					{
 						id: 4,
 						name: "EQ",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$eq",
 						type: "Object",
@@ -223,7 +223,7 @@
 					{
 						id: 5,
 						name: "NEQ",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$neq",
 						type: "Object",
@@ -231,7 +231,7 @@
 					{
 						id: 6,
 						name: "GT",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$gt",
 						type: "Object",
@@ -239,7 +239,7 @@
 					{
 						id: 7,
 						name: "GTE",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$gte",
 						type: "Object",
@@ -247,7 +247,7 @@
 					{
 						id: 8,
 						name: "LT",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$lt",
 						type: "Object",
@@ -255,7 +255,7 @@
 					{
 						id: 9,
 						name: "LTE",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$lte",
 						type: "Object",
@@ -279,7 +279,7 @@
 					{
 						id: 12,
 						name: "NOT",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$not",
 						type: "Object",
@@ -287,7 +287,7 @@
 					{
 						id: 13,
 						name: "REGEX",
-						canBeNested: true,
+						canBeNested: false,
 						children: [],
 						keyword: "$regex",
 						type: "Object",
@@ -295,6 +295,25 @@
 				],
 				idGlobal: 1,
 				output: [],
+				dbName: "SSE-HQ",
+				collectionName: "mail-log",
+				fields: [
+					"_id",
+					"originalFilename",
+					"extension",
+					"sender",
+					"subject",
+					"uuid",
+					"filename",
+					"date",
+					"hash",
+					"mapped",
+					"remarks",
+					"stockistId",
+					"stockistName",
+					"metaUsed",
+					"extractedOn",
+				],
 			};
 		},
 		methods: {
@@ -313,31 +332,40 @@
 					});
 				return parent;
 			},
-			createQuery(query) {
-				let pipeline = [];
+			createQuery(query, parent) {
+				let pipeline = parent.type == "Array" ? [] : {};
+				let isParentArray = parent.type == "Array";
 				for (let elem of query) {
-					// if (elem.children.length) {
-					// 	this.createQuery(elem.children);
-					// }
-					switch (elem.type) {
-						case "Object": {
-							pipeline.push({
-								[elem.keyword]: elem.children.length
-									? { ...this.createQuery(elem.children) }
-									: {},
-							});
-							break;
-						}
-						case "Array": {
-							pipeline.push({
-								[elem.keyword]: elem.children.length
-									? this.createQuery(elem.children)
-									: [],
-							});
-							break;
-						}
+					let isElemArray = elem.type == "Array";
+					if (isParentArray) {
+						pipeline.push({
+							[elem.keyword]: elem.children.length
+								? this.createQuery(
+										elem.children,
+										JSON.parse(JSON.stringify(elem))
+								  )
+								: isElemArray
+								? []
+								: {},
+						});
+					} else {
+						pipeline[elem.keyword] = elem.children.length
+							? this.createQuery(
+									elem.children,
+									JSON.parse(JSON.stringify(elem))
+							  )
+							: isElemArray
+							? []
+							: {};
 					}
 				}
+				// console.log(
+				// 	JSON.stringify(query, null, 2),
+				// 	"\n",
+				// 	JSON.stringify(parent, null, 2),
+				// 	"\n",
+				// 	JSON.stringify(pipeline, null, 2)
+				// );
 				return pipeline;
 			},
 		},
@@ -351,7 +379,11 @@
 				deep: true,
 				handler: function(nv, cv) {
 					// console.log(JSON.stringify(nv, null, 2));
-					let query = this.createQuery(nv);
+					let query = this.createQuery(nv, {
+						type: "Array",
+						id: 0,
+						name: "root",
+					});
 					// console.log(JSON.stringify(query, null, 2));
 					this.output = query;
 				},
