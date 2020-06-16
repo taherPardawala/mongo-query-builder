@@ -23,7 +23,7 @@ let initialState = () => ({
 		"metaUsed",
 		"extractedOn",
 	],
-	fieldData: {},
+	stageFieldData: {},
 });
 
 export default new Vuex.Store({
@@ -31,7 +31,7 @@ export default new Vuex.Store({
 	mutations: {
 		removeElementFromList() {},
 		updateFieldData(state, { id, data }) {
-			state.fieldData[id] = data;
+			state.stageFieldData[id] = JSON.parse(JSON.stringify(data));
 		},
 	},
 	actions: {},
@@ -40,6 +40,6 @@ export default new Vuex.Store({
 		dbName: (state) => state.dbName,
 		collectionName: (state) => state.collectionName,
 		fields: (state) => state.fields,
-		fieldData: (state) => state.fieldData,
+		stageFieldData: (state) => state.stageFieldData,
 	},
 });

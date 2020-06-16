@@ -55,10 +55,10 @@
 				type: Number,
 			},
 			selectedField: {
-				default: "",
+				default: undefined,
 			},
 			inputValue: {
-				default: "",
+				default: undefined,
 			},
 			selectedElement: {
 				type: Object,
@@ -69,6 +69,26 @@
 		},
 		computed: {
 			...mapGetters(["fields"]),
+		},
+		watch: {
+			field: function(nv) {
+				if (this.value != undefined) {
+					this.$emit("input", {
+						id: this.id,
+						selectedField: nv,
+						inputValue: this.value,
+					});
+				}
+			},
+			value: function(nv) {
+				if (nv != undefined) {
+					this.$emit("input", {
+						id: this.id,
+						selectedField: this.field,
+						inputValue: nv,
+					});
+				}
+			},
 		},
 	};
 </script>

@@ -67,8 +67,10 @@
 			<div class="title">Pipeline</div>
 			<div class="pipeline-container">
 				<pipelineStages
-					:parentObject="{}"
+					:parentObject="{ id: 0 }"
 					:children="queryPipeline"
+					key="randomCharacters"
+					:updatequeryVisualiser="updatequeryVisualiser"
 				></pipelineStages>
 			</div>
 		</div>
@@ -82,6 +84,7 @@
 <script>
 	import draggable from "vuedraggable";
 	import pipelineStages from "../components/pipeline-stage.vue";
+	import { mapMutations, mapGetters } from "vuex";
 	export default {
 		name: "About",
 		components: {
@@ -342,38 +345,67 @@
 				for (let elem of query) {
 					let isElemArray = elem.type == "Array";
 					if (isParentArray) {
-						pipeline.push({
-							[elem.keyword]: elem.children.length
-								? this.createQuery(
-										elem.children,
-										JSON.parse(JSON.stringify(elem))
-								  )
-								: isElemArray
-								? []
-								: {},
-						});
-					} else {
-						pipeline[elem.keyword] = elem.children.length
-							? this.createQuery(
+						if (elem.children.length) {
+							pipeline.push({
+								[elem.keyword]: this.createQuery(
 									elem.children,
 									JSON.parse(JSON.stringify(elem))
-							  )
-							: isElemArray
-							? []
-							: {};
+								),
+							});
+						} else if (isElemArray) {
+							let temp = [];
+							if (this.stageFieldData[elem.id]) {
+								for (let field of this.stageFieldData[
+									elem.id
+								]) {
+									temp.push({
+										[field.selectedField]: field.inputValue,
+									});
+								}
+							}
+							pipeline.push({
+								[elem.keyword]: temp,
+							});
+						} else {
+							let temp = {};
+							if (this.stageFieldData[elem.id]) {
+								for (let field of this.stageFieldData[
+									elem.id
+								]) {
+									temp[field.selectedField] =
+										field.inputValue;
+								}
+							}
+							pipeline.push({
+								[elem.keyword]: temp,
+							});
+						}
+					} else {
+						if (elem.children.length) {
+							pipeline[elem.keyword] = this.createQuery(
+								elem.children,
+								JSON.parse(JSON.stringify(elem))
+							);
+						} else if (isElemArray) {
+							pipeline[elem.keyword] = [];
+						} else {
+							pipeline[elem.keyword] = {};
+						}
 					}
 				}
-				// console.log(
-				// 	JSON.stringify(query, null, 2),
-				// 	"\n",
-				// 	JSON.stringify(parent, null, 2),
-				// 	"\n",
-				// 	JSON.stringify(pipeline, null, 2)
-				// );
 				return pipeline;
+			},
+			updatequeryVisualiser() {
+				let query = this.createQuery(this.queryPipeline, {
+					type: "Array",
+					id: 0,
+					name: "root",
+				});
+				this.output = query;
 			},
 		},
 		computed: {
+			...mapGetters(["stageFieldData"]),
 			valueString() {
 				return JSON.stringify(this.output, null, 2);
 			},

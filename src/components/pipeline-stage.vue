@@ -15,8 +15,8 @@
 					'have-children':
 						element.children && element.children.length,
 				}"
-				v-for="element in children"
-				:key="element.id"
+				v-for="(element, index) in children"
+				:key="element.id + index"
 				:ref="'element-' + element.id"
 			>
 				<div
@@ -48,7 +48,7 @@
 						v-if="element.canBeNested"
 						:children="element.children"
 						:parentObject="element"
-						:key="element.id"
+						:key="element.id + index"
 					></pipeline-stage>
 				</div>
 			</div>
@@ -58,7 +58,7 @@
 			height="auto"
 			:minHeight="400"
 			:clickToClose="false"
-			name="hello-world"
+			:name="'hello-world-' + parentObject.id"
 		>
 			<div class="modal-wrapper">
 				<div class="modal-title">
@@ -70,10 +70,11 @@
 							v-for="(input, index) in formInputs"
 							:key="input.id"
 							@remove="removeRow"
+							@input="updateInput"
 							:index="index"
 							:id="input.id"
 							:selectedElement="selectedElement"
-							:selectedInput="input.selectedInput"
+							:inputValue="input.inputValue"
 							:selectedField="input.selectedField"
 						></form-input>
 						<button
@@ -91,10 +92,7 @@
 					>
 						Close
 					</button>
-					<button
-						@click.stop="closeFieldsModal"
-						class="submit-form-btn"
-					>
+					<button @click.stop="saveFormData" class="submit-form-btn">
 						Save
 					</button>
 				</div>
@@ -119,6 +117,7 @@
 				selectedElement: {},
 				formModel: {},
 				formInputs: [],
+				formData: [],
 			};
 		},
 		methods: {
@@ -144,35 +143,54 @@
 				this.removeElementFromList(id);
 			},
 			openFieldsModal(elem) {
-				this.selectedElement = elem;
-				if (this.fieldData[this.selectedElement.id]) {
+				this.selectedElement = JSON.parse(JSON.stringify(elem));
+				this.formInputs = [];
+				this.formData = [];
+				if (this.stageFieldData[this.selectedElement.id]) {
 					// do something if data already exists
+					this.formInputs = JSON.parse(
+						JSON.stringify(
+							this.stageFieldData[this.selectedElement.id]
+						)
+					);
 				} else {
 					// Create some sort of reference to the rows
 					this.formInputs.push({
 						id: new Date().getTime(),
 						selectedField: "",
-						selectedInput: "",
+						inputValue: "",
 					});
 				}
-				this.$modal.show("hello-world");
+				this.$modal.show("hello-world-" + this.parentObject.id);
 			},
 			closeFieldsModal() {
-				this.$modal.hide("hello-world");
+				this.$modal.hide("hello-world-" + this.parentObject.id);
+			},
+			saveFormData() {
+				this.updateFieldData({
+					id: this.selectedElement.id,
+					data: this.formData,
+				});
+				this.updatequeryVisualiser();
+				this.closeFieldsModal();
 			},
 			addRow(row) {
 				this.formInputs.push({
 					id: new Date().getTime(),
-					selectedField: "",
-					selectedInput: "",
+					selectedField: undefined,
+					inputValue: undefined,
 				});
 			},
 			removeRow(row) {
 				this.formInputs = this.formInputs.filter((e) => e.id != row.id);
 			},
+			updateInput(row) {
+				this.formData = this.formData.filter((e) => e.id != row.id);
+				this.formData.push(row);
+			},
 		},
 		computed: {
-			...mapGetters(["fieldData", "fields"]),
+			...mapGetters(["stageFieldData", "fields"]),
 		},
 		props: {
 			children: {
@@ -187,6 +205,10 @@
 				required: false,
 				type: Number,
 				default: 1,
+			},
+			updatequeryVisualiser: {
+				type: Function,
+				required: false,
 			},
 		},
 	};
