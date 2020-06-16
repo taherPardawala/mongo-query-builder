@@ -55,7 +55,8 @@
 		</draggable>
 		<modal
 			:scrollable="true"
-			:height="400"
+			height="auto"
+			:minHeight="400"
 			:clickToClose="false"
 			name="hello-world"
 		>
@@ -65,19 +66,22 @@
 				</div>
 				<div class="modal-content">
 					<div class="form-wrapper">
-						<div class="input-wrapper">
-							<multiselect :options="fields"></multiselect>
-							<input type="text" />
-							<button v-if="selectedElement.allowMultipleInputs">
-								Add
-							</button>
-							<button
-								v-if="selectedElement.allowMultipleInputs"
-								class="remove-btn"
-							>
-								X
-							</button>
-						</div>
+						<form-input
+							v-for="(input, index) in formInputs"
+							:key="input.id"
+							@remove="removeRow"
+							:index="index"
+							:id="input.id"
+							:selectedElement="selectedElement"
+							:selectedInput="input.selectedInput"
+							:selectedField="input.selectedField"
+						></form-input>
+						<button
+							v-if="selectedElement.allowMultipleInputs"
+							@click="addRow"
+						>
+							Add Row
+						</button>
 					</div>
 				</div>
 				<div class="modal-actions">
@@ -85,7 +89,7 @@
 						@click.stop="closeFieldsModal"
 						class="remove-btn close-modal-btn"
 					>
-						close
+						Close
 					</button>
 					<button
 						@click.stop="closeFieldsModal"
@@ -102,22 +106,23 @@
 <script>
 	import draggable from "vuedraggable";
 	import { mapMutations, mapGetters } from "vuex";
-	import Multiselect from "vue-multiselect";
+	import formInput from "../components/form-input";
 	export default {
 		name: "pipeline-stage",
 		components: {
 			draggable,
-			Multiselect,
+			formInput,
 		},
 		mounted() {},
 		data() {
 			return {
 				selectedElement: {},
 				formModel: {},
+				formInputs: [],
 			};
 		},
 		methods: {
-			...mapMutations(["removeElementFromList"]),
+			...mapMutations(["removeElementFromList", "updateFieldData"]),
 			getGroupObject() {
 				if (this.parentObject.canBeNested) {
 					return {
@@ -140,14 +145,34 @@
 			},
 			openFieldsModal(elem) {
 				this.selectedElement = elem;
+				if (this.fieldData[this.selectedElement.id]) {
+					// do something if data already exists
+				} else {
+					// Create some sort of reference to the rows
+					this.formInputs.push({
+						id: new Date().getTime(),
+						selectedField: "",
+						selectedInput: "",
+					});
+				}
 				this.$modal.show("hello-world");
 			},
 			closeFieldsModal() {
 				this.$modal.hide("hello-world");
 			},
+			addRow(row) {
+				this.formInputs.push({
+					id: new Date().getTime(),
+					selectedField: "",
+					selectedInput: "",
+				});
+			},
+			removeRow(row) {
+				this.formInputs = this.formInputs.filter((e) => e.id != row.id);
+			},
 		},
 		computed: {
-			...mapGetters(["dbName", "collectionName", "fields"]),
+			...mapGetters(["fieldData", "fields"]),
 		},
 		props: {
 			children: {
@@ -167,7 +192,6 @@
 	};
 </script>
 
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
 	.operator-item {
 		padding: 0px 0 0 20px;
@@ -223,6 +247,7 @@
 
 	.modal-wrapper {
 		height: 100%;
+		min-height: 400px;
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -236,6 +261,20 @@
 
 	.modal-wrapper .modal-content {
 		padding: 10px;
+		display: flex;
+		height: 100%;
+		flex-grow: 1;
+	}
+
+	.modal-wrapper .modal-content .form-wrapper {
+		width: 100%;
+		position: relative;
+	}
+
+	.modal-wrapper .modal-content .form-wrapper button {
+		position: absolute;
+		bottom: -25px;
+		right: 0;
 	}
 
 	.modal-wrapper .modal-actions {
@@ -245,27 +284,10 @@
 	.modal-wrapper .modal-actions button {
 		padding: 10px 20px;
 	}
+</style>
 
-	.remove-btn {
-		color: red;
-	}
-
-	.remove-btn:hover {
-		background-color: #f7c1bd;
-	}
-
-	button {
-		background-color: transparent;
-		color: #fb8c00;
-		border: none;
-		border-radius: 4px;
-		font-size: 16px;
-	}
-	button:hover {
-		background-color: #fef1e1;
-	}
-
-	button:focus {
-		outline: none;
+<style>
+	.vm--modal {
+		overflow: visible;
 	}
 </style>

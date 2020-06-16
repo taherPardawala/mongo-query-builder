@@ -396,6 +396,30 @@
 	};
 </script>
 
+<style>
+	.remove-btn {
+		color: red;
+	}
+
+	.remove-btn:hover {
+		background-color: #f7c1bd;
+	}
+
+	button {
+		background-color: transparent;
+		color: #fb8c00;
+		border: none;
+		border-radius: 4px;
+		font-size: 16px;
+	}
+	button:hover {
+		background-color: #fef1e1;
+	}
+
+	button:focus {
+		outline: none;
+	}
+</style>
 <style scoped>
 	.about {
 		display: flex;
