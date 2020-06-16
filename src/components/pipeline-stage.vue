@@ -53,20 +53,45 @@
 				</div>
 			</div>
 		</draggable>
-		<modal :clickToClose="false" name="hello-world">
+		<modal
+			:scrollable="true"
+			:height="400"
+			:clickToClose="false"
+			name="hello-world"
+		>
 			<div class="modal-wrapper">
 				<div class="modal-title">
 					Add Fields
 				</div>
 				<div class="modal-content">
-					The form and stuff goes here
+					<div class="form-wrapper">
+						<div class="input-wrapper">
+							<multiselect :options="fields"></multiselect>
+							<input type="text" />
+							<button v-if="selectedElement.allowMultipleInputs">
+								Add
+							</button>
+							<button
+								v-if="selectedElement.allowMultipleInputs"
+								class="remove-btn"
+							>
+								X
+							</button>
+						</div>
+					</div>
 				</div>
 				<div class="modal-actions">
 					<button
 						@click.stop="closeFieldsModal"
-						class="close-modal-btn"
+						class="remove-btn close-modal-btn"
 					>
 						close
+					</button>
+					<button
+						@click.stop="closeFieldsModal"
+						class="submit-form-btn"
+					>
+						Save
 					</button>
 				</div>
 			</div>
@@ -76,15 +101,20 @@
 
 <script>
 	import draggable from "vuedraggable";
-	import { mapMutations } from "vuex";
+	import { mapMutations, mapGetters } from "vuex";
+	import Multiselect from "vue-multiselect";
 	export default {
 		name: "pipeline-stage",
 		components: {
 			draggable,
+			Multiselect,
 		},
 		mounted() {},
 		data() {
-			return {};
+			return {
+				selectedElement: {},
+				formModel: {},
+			};
 		},
 		methods: {
 			...mapMutations(["removeElementFromList"]),
@@ -108,12 +138,16 @@
 			removeElement(id) {
 				this.removeElementFromList(id);
 			},
-			openFieldsModal({ id }) {
+			openFieldsModal(elem) {
+				this.selectedElement = elem;
 				this.$modal.show("hello-world");
 			},
 			closeFieldsModal() {
 				this.$modal.hide("hello-world");
 			},
+		},
+		computed: {
+			...mapGetters(["dbName", "collectionName", "fields"]),
 		},
 		props: {
 			children: {
@@ -133,6 +167,7 @@
 	};
 </script>
 
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style scoped>
 	.operator-item {
 		padding: 0px 0 0 20px;
@@ -157,11 +192,6 @@
 		background-color: gray;
 		position: absolute;
 		left: 20px;
-	}
-
-	.level-1::after,
-	.level-1::before {
-		background-color: red;
 	}
 
 	.ghost {
@@ -219,6 +249,11 @@
 	.remove-btn {
 		color: red;
 	}
+
+	.remove-btn:hover {
+		background-color: #f7c1bd;
+	}
+
 	button {
 		background-color: transparent;
 		color: #fb8c00;

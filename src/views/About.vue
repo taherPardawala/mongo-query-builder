@@ -113,6 +113,7 @@
 						children: [],
 						keyword: "$match",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 14,
@@ -121,6 +122,7 @@
 						children: [],
 						keyword: "$addFields",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 16,
@@ -129,6 +131,7 @@
 						children: [],
 						keyword: "$count",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 17,
@@ -137,6 +140,7 @@
 						children: [],
 						keyword: "$group",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 18,
@@ -145,6 +149,7 @@
 						children: [],
 						keyword: "$limit",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 21,
@@ -153,6 +158,7 @@
 						children: [],
 						keyword: "$merge",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 22,
@@ -161,6 +167,7 @@
 						children: [],
 						keyword: "$out",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 23,
@@ -169,6 +176,7 @@
 						children: [],
 						keyword: "$project",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 24,
@@ -177,6 +185,7 @@
 						children: [],
 						keyword: "$replaceRoot",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 25,
@@ -185,6 +194,7 @@
 						children: [],
 						keyword: "$skip",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 26,
@@ -193,6 +203,7 @@
 						children: [],
 						keyword: "$sortByCount",
 						type: "Object",
+						allowMultipleInputs: true,
 					},
 				],
 				matchOperators: [
@@ -203,6 +214,7 @@
 						children: [],
 						keyword: "$and",
 						type: "Array",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 2,
@@ -211,6 +223,7 @@
 						children: [],
 						keyword: "$or",
 						type: "Array",
+						allowMultipleInputs: true,
 					},
 					{
 						id: 4,
@@ -219,6 +232,7 @@
 						children: [],
 						keyword: "$eq",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 5,
@@ -227,6 +241,7 @@
 						children: [],
 						keyword: "$neq",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 6,
@@ -235,6 +250,7 @@
 						children: [],
 						keyword: "$gt",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 7,
@@ -243,6 +259,7 @@
 						children: [],
 						keyword: "$gte",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 8,
@@ -251,6 +268,7 @@
 						children: [],
 						keyword: "$lt",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 9,
@@ -259,6 +277,7 @@
 						children: [],
 						keyword: "$lte",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 10,
@@ -267,6 +286,7 @@
 						children: [],
 						keyword: "$in",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 11,
@@ -275,6 +295,7 @@
 						children: [],
 						keyword: "$nin",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 12,
@@ -283,6 +304,7 @@
 						children: [],
 						keyword: "$not",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 					{
 						id: 13,
@@ -291,29 +313,11 @@
 						children: [],
 						keyword: "$regex",
 						type: "Object",
+						allowMultipleInputs: false,
 					},
 				],
 				idGlobal: 1,
 				output: [],
-				dbName: "SSE-HQ",
-				collectionName: "mail-log",
-				fields: [
-					"_id",
-					"originalFilename",
-					"extension",
-					"sender",
-					"subject",
-					"uuid",
-					"filename",
-					"date",
-					"hash",
-					"mapped",
-					"remarks",
-					"stockistId",
-					"stockistName",
-					"metaUsed",
-					"extractedOn",
-				],
 			};
 		},
 		methods: {
