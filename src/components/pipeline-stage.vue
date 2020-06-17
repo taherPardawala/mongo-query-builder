@@ -49,6 +49,7 @@
 						:children="element.children"
 						:parentObject="element"
 						:key="element.id + index"
+						:updatequeryVisualiser="updatequeryVisualiser"
 					></pipeline-stage>
 				</div>
 			</div>
