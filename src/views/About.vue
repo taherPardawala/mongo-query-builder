@@ -62,6 +62,34 @@
 					</div>
 				</draggable>
 			</div>
+			<div class="operator-list operators">
+				<input
+					id="euqlity-operator-list-radio"
+					type="checkbox"
+					name="accordion"
+				/>
+				<label class="title" for="euqlity-operator-list-radio">
+					Equality Operators
+				</label>
+				<draggable
+					v-model="euqlityOperators"
+					@start="drag = true"
+					@end="drag = false"
+					:group="{ name: 'Operators', pull: 'clone', put: false }"
+					:sort="false"
+					:clone="addPipelineElement"
+					ghost-class="ghost"
+					:animation="150"
+				>
+					<div
+						class="operator-item"
+						v-for="element in euqlityOperators"
+						:key="element.id"
+					>
+						{{ element.name }}
+					</div>
+				</draggable>
+			</div>
 		</div>
 		<div class="pipeline">
 			<div class="title">Pipeline</div>
@@ -136,15 +164,15 @@
 						type: "Object",
 						allowMultipleInputs: true,
 					},
-					{
-						id: 17,
-						name: "Group",
-						canBeNested: false,
-						children: [],
-						keyword: "$group",
-						type: "Object",
-						allowMultipleInputs: true,
-					},
+					// {
+					// 	id: 17,
+					// 	name: "Group",
+					// 	canBeNested: false,
+					// 	children: [],
+					// 	keyword: "$group",
+					// 	type: "Object",
+					// 	allowMultipleInputs: true,
+					// },
 					{
 						id: 18,
 						name: "Limit",
@@ -181,15 +209,15 @@
 						type: "Object",
 						allowMultipleInputs: true,
 					},
-					{
-						id: 24,
-						name: "Replace Root",
-						canBeNested: false,
-						children: [],
-						keyword: "$replaceRoot",
-						type: "Object",
-						allowMultipleInputs: true,
-					},
+					// {
+					// 	id: 24,
+					// 	name: "Replace Root",
+					// 	canBeNested: false,
+					// 	children: [],
+					// 	keyword: "$replaceRoot",
+					// 	type: "Object",
+					// 	allowMultipleInputs: true,
+					// },
 					{
 						id: 25,
 						name: "Skip",
@@ -228,6 +256,8 @@
 						type: "Array",
 						allowMultipleInputs: true,
 					},
+				],
+				euqlityOperators: [
 					{
 						id: 4,
 						name: "EQ",
@@ -236,6 +266,7 @@
 						keyword: "$eq",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 5,
@@ -245,6 +276,7 @@
 						keyword: "$neq",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 6,
@@ -254,6 +286,7 @@
 						keyword: "$gt",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 7,
@@ -263,6 +296,7 @@
 						keyword: "$gte",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 8,
@@ -272,6 +306,7 @@
 						keyword: "$lt",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 9,
@@ -281,6 +316,7 @@
 						keyword: "$lte",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 10,
@@ -290,6 +326,7 @@
 						keyword: "$in",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 11,
@@ -299,6 +336,7 @@
 						keyword: "$nin",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 12,
@@ -308,6 +346,7 @@
 						keyword: "$not",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 					{
 						id: 13,
@@ -317,6 +356,7 @@
 						keyword: "$regex",
 						type: "Object",
 						allowMultipleInputs: false,
+						stageType: "matchAndOrOperators",
 					},
 				],
 				idGlobal: 1,
@@ -339,56 +379,85 @@
 					});
 				return parent;
 			},
+			getFieldsForArrayElement(elem) {
+				let temp = [];
+				if (this.stageFieldData[elem.id]) {
+					for (let field of this.stageFieldData[elem.id]) {
+						temp.push({
+							[field.selectedField]: field.inputValue,
+						});
+					}
+				}
+				return temp;
+			},
+			getFieldsForObjectElement(elem) {
+				let temp = {};
+				if (this.stageFieldData[elem.id]) {
+					for (let field of this.stageFieldData[elem.id]) {
+						temp[field.selectedField] = field.inputValue;
+					}
+				}
+				return temp;
+			},
+			getFieldsForMatchAndOrOperators(elem) {
+				let temp = {};
+				if (this.stageFieldData[elem.id]) {
+					for (let field of this.stageFieldData[elem.id]) {
+						temp[field.selectedField] = {
+							[elem.keyword]: field.inputValue,
+						};
+					}
+				}
+				return temp;
+			},
 			createQuery(query, parent) {
 				let pipeline = parent.type == "Array" ? [] : {};
 				let isParentArray = parent.type == "Array";
 				for (let elem of query) {
 					let isElemArray = elem.type == "Array";
 					if (isParentArray) {
-						if (elem.children.length) {
+						if (isElemArray) {
 							pipeline.push({
-								[elem.keyword]: this.createQuery(
+								[elem.keyword]: [
+									...this.getFieldsForArrayElement(elem),
+									...this.createQuery(
+										elem.children,
+										JSON.parse(JSON.stringify(elem))
+									),
+								],
+							});
+						} else {
+							if (
+								elem.stageType &&
+								elem.stageType == "matchAndOrOperators"
+							) {
+								pipeline.push(
+									this.getFieldsForMatchAndOrOperators(elem)
+								);
+							} else {
+								pipeline.push({
+									[elem.keyword]: {
+										...this.getFieldsForObjectElement(elem),
+										...this.createQuery(
+											elem.children,
+											JSON.parse(JSON.stringify(elem))
+										),
+									},
+								});
+							}
+							// This is where we need to write code for the where the syntax changes.
+						}
+					} else {
+						if (isElemArray) {
+							pipeline[elem.keyword] = [
+								...this.getFieldsForArrayElement(elem),
+								...this.createQuery(
 									elem.children,
 									JSON.parse(JSON.stringify(elem))
 								),
-							});
-						} else if (isElemArray) {
-							let temp = [];
-							if (this.stageFieldData[elem.id]) {
-								for (let field of this.stageFieldData[
-									elem.id
-								]) {
-									temp.push({
-										[field.selectedField]: field.inputValue,
-									});
-								}
-							}
-							pipeline.push({
-								[elem.keyword]: temp,
-							});
+							];
 						} else {
-							let temp = {};
-							if (this.stageFieldData[elem.id]) {
-								for (let field of this.stageFieldData[
-									elem.id
-								]) {
-									temp[field.selectedField] =
-										field.inputValue;
-								}
-							}
-							pipeline.push({
-								[elem.keyword]: temp,
-							});
-						}
-					} else {
-						if (elem.children.length) {
-							pipeline[elem.keyword] = this.createQuery(
-								elem.children,
-								JSON.parse(JSON.stringify(elem))
-							);
-						} else if (isElemArray) {
-							pipeline[elem.keyword] = [];
-						} else {
+							// This condition right now does not exist for US as this hierarchy is not available
 							pipeline[elem.keyword] = {};
 						}
 					}
